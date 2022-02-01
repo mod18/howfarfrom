@@ -1,0 +1,1 @@
+CLOUD_API_KEY = "AIzaSyCwxIQZK2wWXffvKmx0o0orW0J7fcutEy0"
