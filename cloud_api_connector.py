@@ -7,6 +7,7 @@ from typing import List, Dict, Tuple
 from functools import lru_cache
 
 from constants import CLOUD_API_KEY
+from utils import Place, TravelTime
 
 logger = logging.getLogger("__cloud_api_connector__")
 logger.setLevel(logging.DEBUG)
@@ -22,6 +23,7 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(stream_handler)
 logger.addHandler(file_handler)
+
 
 class CloudApiConnector:
     """Connects to the Cloud API"""
@@ -61,8 +63,8 @@ class CloudApiConnector:
                 attempts += 1
 
     @lru_cache
-    def get_place_id(self, query: str, output="json") -> str:
-        """Gets a place_id from a search string
+    def get_place(self, query: str, output="json") -> str:
+        """Gets a place_id and name from a search string
         
         https://developers.google.com/maps/documentation/places/web-service/search-find-place?hl=en_US
         """
@@ -73,13 +75,13 @@ class CloudApiConnector:
         endpoint = self.base_url + f"place/findplacefromtext/{output}"
         input = urllib.parse.quote(query)
         inputtype = "textquery"
-        fields = "place_id"
+        fields = "place_id,name"
         url = endpoint + f"?input={input}&inputtype={inputtype}&fields={fields}&key={self.api_key}"
         resp = self._get(url=url)
         logger.debug(f"Places API call successful: {resp}")
-        return resp["candidates"][0]["place_id"]
+        return Place(id=resp["candidates"][0]["place_id"], name=resp["candidates"][0]["name"])
 
-    def get_distance(self, origins: List[str], destinations: List[str], output="json") -> str:
+    def get_distances(self, origins: List[Place], destinations: List[Place], output="json") -> str:
         """Gets the travel time and distance between origins and destinations
         
         Origins and destinations should be proper place ids from the Cloud API, not search strings.
@@ -93,10 +95,12 @@ class CloudApiConnector:
         resp = self._get(url=url)
         logger.debug(f"Distance API call successful: {resp}")
 
-        row_count, results = 0, []
-        for dest in resp["destination_addresses"]:
-            for origin in resp["origin_addresses"]:
-                results.append([origin, dest, resp["rows"][0]["elements"][row_count]["duration"]["text"]])
+        origin_count, results = 0, []
+        for origin in resp["origin_addresses"]:
+            row_count = 0
+            for destination in resp["destination_addresses"]:
+                results.append(TravelTime(origin=origin, destination=destination, travel_time_mins=resp["rows"][origin_count]["elements"][row_count]["duration"]["text"]))
                 row_count += 1
+            origin_count += 1
         return results
 
