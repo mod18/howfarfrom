@@ -75,11 +75,11 @@ class CloudApiConnector:
         endpoint = self.base_url + f"place/findplacefromtext/{output}"
         input = urllib.parse.quote(query)
         inputtype = "textquery"
-        fields = "place_id,name"
+        fields = "place_id,name,formatted_address"
         url = endpoint + f"?input={input}&inputtype={inputtype}&fields={fields}&key={self.api_key}"
         resp = self._get(url=url)
         logger.debug(f"Places API call successful: {resp}")
-        return Place(id=resp["candidates"][0]["place_id"], name=resp["candidates"][0]["name"])
+        return Place(id=resp["candidates"][0]["place_id"], name=resp["candidates"][0]["name"], address=resp["candidates"][0]["formatted_address"])
 
     def get_distances(self, origins: List[Place], destinations: List[Place], output="json") -> str:
         """Gets the travel time and distance between origins and destinations
@@ -89,18 +89,19 @@ class CloudApiConnector:
         https://developers.google.com/maps/documentation/distance-matrix/overview?hl=en_US
         """
         endpoint = self.base_url + f"distancematrix/{output}"
-        enc_origins = urllib.parse.quote("|".join([f"place_id:{origin}" for origin in origins]))
-        enc_destinations = urllib.parse.quote("|".join([f"place_id:{dest}" for dest in destinations]))
+        enc_origins = urllib.parse.quote("|".join([f"place_id:{origin.id}" for origin in origins]))
+        enc_destinations = urllib.parse.quote("|".join([f"place_id:{dest.id}" for dest in destinations]))
         url = endpoint + f"?origins={enc_origins}&destinations={enc_destinations}&key={self.api_key}"
         resp = self._get(url=url)
         logger.debug(f"Distance API call successful: {resp}")
 
         origin_count, results = 0, []
         for origin in resp["origin_addresses"]:
+            origin_place = self.get_place(query=origin)
             row_count = 0
             for destination in resp["destination_addresses"]:
-                results.append(TravelTime(origin=origin, destination=destination, travel_time_mins=resp["rows"][origin_count]["elements"][row_count]["duration"]["text"]))
+                destination_place = self.get_place(query=destination)
+                results.append(TravelTime(origin=origin_place, destination=destination_place, travel_time_mins=resp["rows"][origin_count]["elements"][row_count]["duration"]["text"]))
                 row_count += 1
             origin_count += 1
         return results
-
