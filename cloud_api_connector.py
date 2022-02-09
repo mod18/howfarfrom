@@ -5,9 +5,10 @@ import sys
 from time import sleep
 from typing import List, Dict, Tuple
 from functools import lru_cache
+from collections import defaultdict
 
 from constants import CLOUD_API_KEY
-from utils import Place, TravelTime
+from utils import Place, Journey, TravelMatrix
 
 logger = logging.getLogger("__cloud_api_connector__")
 logger.setLevel(logging.DEBUG)
@@ -35,7 +36,8 @@ class CloudApiConnector:
     ):
         self.base_url = base_url
         self.api_key = api_key
-        logger.debug("Built initialized")
+        
+        self.distance_cache = defaultdict(str)
 
     def __repr__(self):
         return "Google Cloud API Connector"
@@ -85,6 +87,8 @@ class CloudApiConnector:
         """Gets the travel time and distance between origins and destinations
         
         Origins and destinations should be proper place ids from the Cloud API, not search strings.
+
+        Distance endpoint returns a matrix **in the same order of the request**
         
         https://developers.google.com/maps/documentation/distance-matrix/overview?hl=en_US
         """
@@ -96,12 +100,11 @@ class CloudApiConnector:
         logger.debug(f"Distance API call successful: {resp}")
 
         origin_count, results = 0, []
-        for origin in resp["origin_addresses"]:
-            origin_place = self.get_place(query=origin)
+        for origin in origins:
             row_count = 0
-            for destination in resp["destination_addresses"]:
-                destination_place = self.get_place(query=destination)
-                results.append(TravelTime(origin=origin_place, destination=destination_place, travel_time_mins=resp["rows"][origin_count]["elements"][row_count]["duration"]["text"]))
+            for destination in destinations:
+                results.append(Journey(origin=origin, destination=destination, travel_time_mins=resp["rows"][origin_count]["elements"][row_count]["duration"]["text"]))
                 row_count += 1
             origin_count += 1
-        return results
+        return TravelMatrix(journeys=results)
+
