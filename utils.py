@@ -7,7 +7,7 @@ class Place():
         self.name = name
 
     def __repr__(self):
-        return f"{self.name} -- {self.address} ({self.id})"
+        return f"Place ({self.name} -- {self.address} -- {self.id})"
 
 class Journey():
     def __init__(self, origin: Place, destination: Place, travel_time_mins: int):
@@ -16,12 +16,15 @@ class Journey():
         self.travel_time_mins = travel_time_mins
 
     def __repr__(self):
-        return f"{self.origin.name} -> {self.destination.name}: {self.travel_time_mins}"
+        return f"Journey ({self.origin.name} -> {self.destination.name}: {self.travel_time_mins})"
 
 class TravelMatrix():
     def __init__(self, journeys = List[Journey]):
         self.journeys = journeys
 
     def __repr__(self):
+        return "TravelMatrix"
+
+    def print_journeys(self):
         for journey in self.journeys:
             print(journey)
