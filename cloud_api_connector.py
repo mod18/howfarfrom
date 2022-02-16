@@ -83,7 +83,7 @@ class CloudApiConnector:
         logger.debug(f"Places API call successful: {resp}")
         return Place(id=resp["candidates"][0]["place_id"], name=resp["candidates"][0]["name"], address=resp["candidates"][0]["formatted_address"])
 
-    def get_distances(self, origins: List[Place], destinations: List[Place], output="json") -> str:
+    def get_distances(self, origin_dest_map: Dict[Place, Place], output="json") -> str:
         """Gets the travel time and distance between origins and destinations
         
         Origins and destinations should be proper place ids from the Cloud API, not search strings.
@@ -92,6 +92,8 @@ class CloudApiConnector:
         
         https://developers.google.com/maps/documentation/distance-matrix/overview?hl=en_US
         """
+        #Make a map {origin: [destinations]}
+
         endpoint = self.base_url + f"distancematrix/{output}"
         enc_origins = urllib.parse.quote("|".join([f"place_id:{origin.id}" for origin in origins]))
         enc_destinations = urllib.parse.quote("|".join([f"place_id:{dest.id}" for dest in destinations]))
