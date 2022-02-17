@@ -1,30 +1,22 @@
-from typing import List
+from typing import List, Dict
+from collections import defaultdict
+from cloud_api_connector import CloudApiConnector
 
-class Place():
-    def __init__(self, id: str, address: str = None, name: str = None):
-        self.id = id
-        self.address = address
-        self.name = name
+def compute_matrix(form_data: Dict[str, str]) -> Dict[str, str]:
+    q = CloudApiConnector()
+    origin_dest_map = defaultdict(list)
 
-    def __repr__(self):
-        return f"Place ({self.name} -- {self.address} -- {self.id})"
+    for origin in form_data.keys():
+        origin_place = q.get_place(origin)
+        origin_dest_map[origin_place] = [q.get_place(destination, nearby=origin_place) for destination in form_data[origin]]
+    return q.get_distances(origin_dest_map=origin_dest_map)
 
-class Journey():
-    def __init__(self, origin: Place, destination: Place, travel_time_mins: int):
-        self.origin = origin
-        self.destination = destination
-        self.travel_time_mins = travel_time_mins
-
-    def __repr__(self):
-        return f"Journey ({self.origin.name} -> {self.destination.name}: {self.travel_time_mins})"
-
-class TravelMatrix():
-    def __init__(self, journeys = List[Journey]):
-        self.journeys = journeys
-
-    def __repr__(self):
-        return "TravelMatrix"
-
-    def print_journeys(self):
-        for journey in self.journeys:
-            print(journey)
+def parse_form_data(data: Dict[str, str]) -> Dict[str, str]:
+    parsed_data = defaultdict(list)
+    for key, val in data.items():
+        parsed_key = key.split("_")
+        if "destination" in parsed_key and val != '':
+            origin_code = "_".join([parsed_key[0], parsed_key[1]])
+            origin_str = data[origin_code]
+            parsed_data[origin_str].append(val)
+    return parsed_data
