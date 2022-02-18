@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict
 from collections import defaultdict
 from cloud_api_connector import CloudApiConnector
 
