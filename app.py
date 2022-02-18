@@ -22,9 +22,10 @@ if sys.platform == "win32":
     temp = pathlib.PosixPath
     pathlib.PosixPath = pathlib.WindowsPath
 
-@app.route('/', methods=["GET", "POST"])
+
+@app.route("/", methods=["GET", "POST"])
 def home():
-    if request.method =="POST":
+    if request.method == "POST":
         form_data = request.form.to_dict()
         logger.debug(form_data)
 
@@ -32,16 +33,19 @@ def home():
         matrix = compute_matrix(parsed_form_data)
 
         return render_template("home.html", matrix=matrix)
-        
+
     return render_template("home.html")
 
-@app.route('/contact', methods=["GET"])
+
+@app.route("/contact", methods=["GET"])
 def contact():
     return render_template("contact.html")
 
-@app.route('/about', methods=["GET"])
+
+@app.route("/about", methods=["GET"])
 def about():
     return render_template("about.html")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run()
