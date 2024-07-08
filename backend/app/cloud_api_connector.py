@@ -2,13 +2,16 @@ import requests
 import urllib.parse
 import logging
 import sys
+import os
 from time import sleep
 from typing import List, Dict, Tuple
 from functools import lru_cache
 from collections import defaultdict
 
-from constants import CLOUD_API_KEY
-from classes import Place, Journey, TravelMatrix
+from dotenv import load_dotenv
+from models import Place, Journey, TravelMatrix
+
+load_dotenv()
 
 logger = logging.getLogger("__cloud_api_connector__")
 logger.setLevel(logging.DEBUG)
@@ -30,7 +33,7 @@ class CloudApiConnector:
     """Connects to the Cloud API"""
 
     def __init__(
-        self, api_key=CLOUD_API_KEY, base_url="https://maps.googleapis.com/maps/api/",
+        self, api_key=os.environ.get("GOOGLE_API_KEY"), base_url="https://maps.googleapis.com/maps/api/",
     ):
         self.base_url = base_url
         self.api_key = api_key
