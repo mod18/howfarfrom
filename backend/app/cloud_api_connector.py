@@ -9,7 +9,7 @@ from functools import lru_cache
 from collections import defaultdict
 
 from dotenv import load_dotenv
-from models import Place, Journey, TravelMatrix
+from .models import Place, Journey, TravelMatrix
 
 load_dotenv()
 

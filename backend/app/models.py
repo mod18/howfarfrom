@@ -1,12 +1,16 @@
 from typing import List, Any
+from pydantic import BaseModel
 
+class Place(BaseModel):
+    id: str
+    name: str = None
+    address: str = None
+    geo: Any = None
+    lat: float = None
+    lng: float = None
 
-class Place:
-    def __init__(self, id: str, address: str = None, name: str = None, geo: Any = None):
-        self.id = id
-        self.address = address
-        self.name = name
-        self.geo = geo
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._parse_geo()
 
     def __repr__(self):
@@ -19,19 +23,23 @@ class Place:
         self.lat, self.lng = self.geo["location"]["lat"], self.geo["location"]["lng"]
 
 
-class Journey:
-    def __init__(self, origin: Place, destination: Place, travel_time_mins: int):
-        self.origin = origin
-        self.destination = destination
-        self.travel_time_mins = travel_time_mins
+class Journey(BaseModel):
+    origin: Place
+    destination: Place
+    travel_time_mins: int
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def __repr__(self):
         return f"Journey ({self.origin.name} -> {self.destination.name}: {self.travel_time_mins})"
 
 
-class TravelMatrix:
-    def __init__(self, journeys=[]):
-        self.journeys = journeys
+class TravelMatrix(BaseModel):
+    journeys: List
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def __repr__(self):
         return "TravelMatrix"
