@@ -68,6 +68,7 @@ class CloudApiConnector:
         
         https://developers.google.com/maps/documentation/places/web-service/search-find-place?hl=en_US
         """
+        print(query)
         if not isinstance(query, str):
             logger.error(f"Query must be a string: {query}")
             return
@@ -104,7 +105,6 @@ class CloudApiConnector:
         """
 
         endpoint = self.base_url + f"distancematrix/{output}"
-        matrix = TravelMatrix()
 
         for origin in origin_dest_map.keys():
             enc_origin = urllib.parse.quote(f"place_id:{origin.id}")
@@ -121,9 +121,7 @@ class CloudApiConnector:
             journeys = self._parse_journeys(
                 origin=origin, destinations=origin_dest_map[origin], resp=resp
             )
-            matrix.update(journeys)
-
-        return matrix
+        return TravelMatrix(journeys)
 
     @staticmethod
     def _parse_journeys(
@@ -136,8 +134,8 @@ class CloudApiConnector:
                     origin=origin,
                     destination=destination,
                     travel_time_mins=resp["rows"][0]["elements"][row_count]["duration"][
-                        "text"
-                    ],
+                        "value"
+                    ] // 60,
                 )
             )
             row_count += 1

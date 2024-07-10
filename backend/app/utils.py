@@ -1,12 +1,10 @@
-from typing import Dict
+from typing import Dict, List
 from collections import defaultdict
-from cloud_api_connector import CloudApiConnector
+from .cloud_api_connector import CloudApiConnector
 
-
-def compute_matrix(form_data: Dict[str, str]) -> Dict[str, str]:
+def compute_matrix(form_data: Dict[str, List[str]]) -> Dict[str, str]:
     q = CloudApiConnector()
-    origin_dest_map = defaultdict(list)
-
+    origin_dest_map = {}
     for origin in form_data.keys():
         origin_place = q.get_place(origin)
         origin_dest_map[origin_place] = [

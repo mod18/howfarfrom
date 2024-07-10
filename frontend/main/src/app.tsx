@@ -66,22 +66,53 @@ const App = () => {
 
 const InputForm = ({ onSubmit }) => {
   // Declare a state variable to hold the input value
-  const [inputValue, setInputValue] = useState('');
+  const [originValue, setOriginValue] = useState('');
+  const [destValue, setDestValue] = useState('');
+  const [moreDestValues, setMoreDestValues] = useState([{ value: ''}]);
   const [loading, setLoading] = useState(false); 
 
-  // Handle input change
-  const handleInputChange = (event) => {
-    setInputValue(event.target.value);
+  // Handle input changes
+  const handleOriginChange = (event) => {
+    setOriginValue(event.target.value);
+  };
+  const handleDestChange = (event) => {
+    setDestValue(event.target.value);
+  };
+  const handleMoreDestChange = (index, event) => {
+    const newDestFields = [...moreDestValues];
+    newDestFields[index].value = event.target.value;
+    setMoreDestValues(newDestFields);
+  };
+
+  const handleAddDestField = () => {
+    setMoreDestValues([...moreDestValues, { value: ''}]);
   };
 
   // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('Input Value:', inputValue);
+    console.log('Form Values:', {originValue, destValue, moreDestValues});
     setLoading(true)
     try {
-      const resp = await axios.get(`http://localhost:3000/cloud_api/get_place/${inputValue}`);
-      const primaryLocation = new Place(resp.data['id'], resp.data['name'], resp.data['lat'], resp.data['lng'])
+      let destVals = [destValue]
+      const moreDestValuesList = moreDestValues.map(field => field.value);
+      for (let i = 0; i < moreDestValuesList.length; i++) {
+        destVals.push(moreDestValuesList[i]);
+      }
+      let formMap = {};
+      formMap[originValue] = destVals;
+      console.log(JSON.stringify(formMap));
+      const resp = await axios.get(`http://localhost:3000/cloud_api/get_distances/${JSON.stringify(formMap)}`);
+      console.log(resp.data);
+
+      // const parsedResp = JSON.parse(resp.data);
+
+      let origins: string[] = [];
+      for (const key in resp.data['formatted_matrix']) {
+        origins.push(resp.data['formatted_matrix'][key])
+      };
+      console.log(origins)
+      const primaryLocation = new Place(origins[0]['id'], origins[0]['name'], origins[0]['lat'], origins[0]['lng'])
       onSubmit(primaryLocation);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -93,14 +124,35 @@ const InputForm = ({ onSubmit }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        <label htmlFor="inputField">Enter something:</label>
+        <label htmlFor="origin">Enter your starting address:</label>
         <input
           type="text"
-          id="inputField"
-          value={inputValue}
-          onChange={handleInputChange}
+          id="origin"
+          value={originValue}
+          onChange={handleOriginChange}
         />
       </div>
+      <div>
+        <label htmlFor="origin">Enter a destination or point of interest:</label>
+        <input
+          type="text"
+          id="dest"
+          value={destValue}
+          onChange={handleDestChange}
+        />
+      </div>
+      {moreDestValues.map((field, index) => (
+        <div key={index}>
+          <label htmlFor={`additionalDest${index}`}>Enter another destination:</label>
+          <input
+            type="text"
+            id={`additionalDest${index}`}
+            value={field.value}
+            onChange={(event) => handleMoreDestChange(index, event)}
+          />
+        </div>
+      ))}
+      <button type="button" onClick={handleAddDestField}>Add another?</button>
       <button type="submit">Submit</button>
       {loading && <p>Loading...</p>}
     </form>
@@ -110,7 +162,7 @@ const InputForm = ({ onSubmit }) => {
 const MapResult = ( {primaryLocation} ) => {
     return (
     // TODO: Move this to backend API call
-    <APIProvider apiKey={apiKey} onLoad={() => console.log('Maps API has loaded.')}>
+    <APIProvider apiKey={""} onLoad={() => console.log('Maps API has loaded.')}>
          <Map
             mapDiv='map-container'
             defaultZoom={13}
