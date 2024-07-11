@@ -6,7 +6,7 @@ import {
     useMap,
     AdvancedMarker,
     MapCameraChangedEvent,
-    Pin
+    Pin,
   } from '@vis.gl/react-google-maps';
 import {MarkerClusterer} from '@googlemaps/markerclusterer';
 import type {Marker} from '@googlemaps/markerclusterer';
@@ -16,7 +16,8 @@ import axios from 'axios';
 import '../styles.css';
 
 
-type Poi = { key: string, location: google.maps.LatLngLiteral }
+type Poi = { key: string, location: google.maps.LatLngLiteral , is_primary_location: boolean}
+type Journey = { origin: string, destination: string, destination_address: string, travel_time_mins: number}
 
 class Place { id: string; name: string; lat: string; lng: string
   constructor(id, name, lat, lng) {
@@ -28,22 +29,33 @@ class Place { id: string; name: string; lat: string; lng: string
   } 
 
 const locations: Poi[] = [
-  {key: 'operaHouse', location: { lat: -33.8567844, lng: 151.213108  }},
-  {key: 'tarongaZoo', location: { lat: -33.8472767, lng: 151.2188164 }},
-  {key: 'manlyBeach', location: { lat: -33.8209738, lng: 151.2563253 }},
-  {key: 'hyderPark', location: { lat: -33.8690081, lng: 151.2052393 }},
-  {key: 'theRocks', location: { lat: -33.8587568, lng: 151.2058246 }},
-  {key: 'circularQuay', location: { lat: -33.858761, lng: 151.2055688 }},
-  {key: 'harbourBridge', location: { lat: -33.852228, lng: 151.2038374 }},
-  {key: 'kingsCross', location: { lat: -33.8737375, lng: 151.222569 }},
-  {key: 'botanicGardens', location: { lat: -33.864167, lng: 151.216387 }},
-  {key: 'museumOfSydney', location: { lat: -33.8636005, lng: 151.2092542 }},
-  {key: 'maritimeMuseum', location: { lat: -33.869395, lng: 151.198648 }},
-  {key: 'kingStreetWharf', location: { lat: -33.8665445, lng: 151.1989808 }},
-  {key: 'aquarium', location: { lat: -33.869627, lng: 151.202146 }},
-  {key: 'darlingHarbour', location: { lat: -33.87488, lng: 151.1987113 }},
-  {key: 'barangaroo', location: { lat: - 33.8605523, lng: 151.1972205 }},
+  // {key: 'operaHouse', location: { lat: -33.8567844, lng: 151.213108  }}
 ];
+const journeys: Journey[] = [];
+const initBounds = {'north': 0, 'south': 0, 'east': 0, 'west': 0}
+
+const updateInitBounds = (lat: number, lng: number) => {
+  if (initBounds['north'] == 0) {
+    initBounds['north'] = lat
+    initBounds['south'] = lat
+    initBounds['east'] = lng
+    initBounds['west'] = lng
+  }
+  else {
+    if (lat > initBounds['north']) {
+      initBounds['north'] = lat
+    }
+    if (lat < initBounds['south']) {
+      initBounds['south'] = lat
+    }
+    if (lng > initBounds['east']) {
+      initBounds['east'] = lng
+    }
+    if (lng < initBounds['west']) {
+      initBounds['west'] = lng
+    }
+  }
+};
 
 const App = () => {
   const [primaryLocation, setprimaryLocation] = useState(null);
@@ -58,7 +70,7 @@ const App = () => {
       {primaryLocation === null ? (
         <InputForm onSubmit={handleFormSubmit} />
       ) : (
-        <MapResult primaryLocation={primaryLocation} />
+        <MapResult primaryLocation={primaryLocation} journeys={journeys} />
       )}
     </div>
   )
@@ -103,17 +115,23 @@ const InputForm = ({ onSubmit }) => {
       formMap[originValue] = destVals;
       console.log(JSON.stringify(formMap));
       const resp = await axios.get(`http://localhost:3000/cloud_api/get_distances/${JSON.stringify(formMap)}`);
-      console.log(resp.data);
-
-      // const parsedResp = JSON.parse(resp.data);
 
       let origins: string[] = [];
       for (const key in resp.data['formatted_matrix']) {
-        origins.push(resp.data['formatted_matrix'][key])
+        let origin_data = resp.data['formatted_matrix'][key]
+        origins.push(origin_data)
+        locations.push({key: origin_data['name'], location: { lat: origin_data['lat'], lng: origin_data['lng']  }, is_primary_location: true})
+        updateInitBounds(origin_data['lat'], origin_data['lng']);
+        // load origin and destinations into locations for map
+        for (let i = 1; i <= 1 + moreDestValuesList.length; i++) {
+          locations.push({key: origin_data[`dest${i}`]['name'], location: { lat: origin_data[`dest${i}`]['lat'], lng: origin_data[`dest${i}`]['lng']  }, is_primary_location: false});
+          updateInitBounds(origin_data[`dest${i}`]['lat'], origin_data[`dest${i}`]['lng']);
+          journeys.push({origin: origin_data['name'], destination: origin_data[`dest${i}`]['name'], destination_address: origin_data[`dest${i}`]['address'], travel_time_mins: origin_data[`dest${i}`]['travel_time_mins']});
+        }
       };
-      console.log(origins)
       const primaryLocation = new Place(origins[0]['id'], origins[0]['name'], origins[0]['lat'], origins[0]['lng'])
-      onSubmit(primaryLocation);
+      onSubmit(primaryLocation, journeys);
+
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -159,22 +177,52 @@ const InputForm = ({ onSubmit }) => {
   );
 };
 
-const MapResult = ( {primaryLocation} ) => {
+const JourneyTable = ({ journeys }) => {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Destination</th>
+          <th>Address</th>
+          <th>Travel Time (Minutes)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {journeys.map((journey) => (
+            <tr key={journey.destination}>
+            <td>{journey.destination}</td>
+            <td>{journey.destination_address}</td>
+            <td>{journey.travel_time_mins}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+const MapResult = ( {primaryLocation, journeys} ) => {
+  console.log(locations)
     return (
-    // TODO: Move this to backend API call
-    <APIProvider apiKey={""} onLoad={() => console.log('Maps API has loaded.')}>
+    // TODO: Move this to backend API call; Customize region based on primaryLocation
+    <APIProvider apiKey={"AIzaSyAsfgc4tpAxRAPpnzydNRiT9Kb42a-Zh7o"} region='GB' onLoad={() => console.log('Maps API has loaded.')}>
          <Map
             mapDiv='map-container'
-            defaultZoom={13}
-            defaultCenter={ { lat: primaryLocation.lat, lng: primaryLocation.lng } }
+            // defaultZoom={13}
+            // defaultCenter={ { lat: primaryLocation.lat, lng: primaryLocation.lng } }
+            defaultBounds={ {north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']} }
             // TODO: Customize map style https://developers.google.com/maps/documentation/get-map-id
             mapId='1fc6d54c8b4d8b02'
+            reuseMaps={true}
             onCameraChanged={ (ev: MapCameraChangedEvent) =>
                 console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)
             }>
             <PoiMarkers pois={locations} />
         </Map>
         <h1>{primaryLocation.name}</h1>
+        <div>
+          <h1>Journey Table</h1>
+          <JourneyTable journeys={journeys} />
+        </div>
     </APIProvider>
     )
 };
@@ -241,7 +289,11 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
             clickable={true}
             onClick={handleClick}
             >
-              <Pin background={'#FBBC04'} glyphColor={'#000'} borderColor={'#000'} />
+          {poi.is_primary_location ? (
+            <Pin background="#FBBC04" glyphColor="#000" borderColor="#000" />
+          ) : (
+            <Pin background="#FB1A04" glyphColor="#000" borderColor="#000" />
+          )}
           </AdvancedMarker>
         ))}
       </>

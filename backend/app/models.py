@@ -67,7 +67,7 @@ class TravelMatrix(BaseModel):
             if origin_id not in self.formatted_matrix:
                 self.formatted_matrix[origin_id] = {'id': journey.origin.id, 'name': journey.origin.name, 'address': journey.origin.address, 'lat': journey.origin.lat, 'lng': journey.origin.lng}
                 i = 1
-            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_time': journey.travel_time_mins}}
+            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_time_mins': journey.travel_time_mins}}
             i += 1
 
         """
