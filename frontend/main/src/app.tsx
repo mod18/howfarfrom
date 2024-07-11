@@ -204,7 +204,7 @@ const MapResult = ( {primaryLocation, journeys} ) => {
   console.log(locations)
     return (
     // TODO: Move this to backend API call; Customize region based on primaryLocation
-    <APIProvider apiKey={"AIzaSyAsfgc4tpAxRAPpnzydNRiT9Kb42a-Zh7o"} region='GB' onLoad={() => console.log('Maps API has loaded.')}>
+    <APIProvider apiKey={""} region='GB' onLoad={() => console.log('Maps API has loaded.')}>
          <Map
             mapDiv='map-container'
             // defaultZoom={13}
