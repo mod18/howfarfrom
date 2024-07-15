@@ -21,6 +21,8 @@ class Lsoa:
     def to_dict(self):
         return {
             'name': self.name,
+            'lat': self.lat,
+            'lng': self.lng,
             'raw_rank': self.raw_rank,
             'pctile': self.pctile,
             'decile': self.decile,
@@ -76,7 +78,7 @@ def run_knn_lsoa():
     lsoa_out.set_index('name', inplace=True)
     joined = lsoa_out.join(postcode_lookup, how='left')
 
-    final = joined[['raw_rank', 'pctile', 'decile', 'pctile_stats', 'decile_stats', 'pcds', ]]
+    final = joined[['raw_rank', 'pctile', 'decile', 'pctile_stats', 'decile_stats', 'pcds', 'lat', 'lng']]
     final.reset_index(inplace=True)
     final = final.rename(columns={'pcds': 'postcode'})
     final.to_csv('imd_data_out.csv')
