@@ -6,7 +6,7 @@ def compute_matrix(form_data: Dict[str, List[str]]) -> Dict[str, str]:
     q = CloudApiConnector()
     origin_dest_map = {}
     for origin in form_data.keys():
-        origin_place = q.get_place(origin)
+        origin_place = q.get_place(origin, is_origin=True)
         origin_dest_map[origin_place] = [
             q.get_place(destination, nearby=origin_place)
             for destination in form_data[origin]

@@ -3,6 +3,7 @@ import urllib.parse
 import logging
 import sys
 import os
+import json
 from time import sleep
 from typing import List, Dict, Tuple
 from functools import lru_cache
@@ -47,7 +48,7 @@ class CloudApiConnector:
         attempts = 0
         while attempts <= 5:
             try:
-                response = requests.get(url=url, params=params,)
+                response = requests.get(url=url, params=params)
                 response.raise_for_status()
             except requests.ConnectionError:
                 logger.error(f"Failed to the Cloud API. Retrying...({attempts} / 5")
@@ -62,34 +63,66 @@ class CloudApiConnector:
             finally:
                 attempts += 1
 
+    def _post(self, url: str, headers=dict(), params=dict()) -> str:
+        attempts = 0
+        while attempts <= 5:
+            try:
+                response = requests.post(url=url, headers=headers, data=params)
+                response.raise_for_status()
+            except requests.ConnectionError:
+                logger.error(f"Failed to the Cloud API. Retrying...({attempts} / 5")
+                sleep(attempts * attempts)
+            except requests.HTTPError as e:
+                logger.error(f"{response.status_code} Error: {e}")
+                sleep(attempts * attempts)
+            else:
+                logger.info("POST request successful")
+                logger.debug(response.json())
+                return response.json()
+            finally:
+                attempts += 1
+
     @lru_cache
-    def get_place(self, query: str, nearby: Place = None, output="json") -> str:
+    def get_place(self, query: str, nearby: Place = None, is_origin: bool = False) -> str:
         """Gets a place_id and name from a search string
         
         https://developers.google.com/maps/documentation/places/web-service/search-find-place?hl=en_US
         """
-        print(query)
         if not isinstance(query, str):
             logger.error(f"Query must be a string: {query}")
             return
 
-        endpoint = self.base_url + f"place/findplacefromtext/{output}"
-        input = urllib.parse.quote(query)
-        inputtype = "textquery"
-        fields = "place_id,name,formatted_address,geometry"
-        url = (
-            endpoint
-            + f"?input={input}&inputtype={inputtype}&fields={fields}&key={self.api_key}"
-        )
+        endpoint = "https://places.googleapis.com/v1/places:searchText"
+        params = {
+            "textQuery": query,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": self.api_key,
+            "X-Goog-FieldMask": "places.name,places.displayName,places.formattedAddress,places.addressComponents,places.googleMapsUri,places.location"
+        }
         if nearby:
-            url += f"&locationbias=point:{nearby.lat},{nearby.lng}"
-        resp = self._get(url=url)
+            params["locationBias"] = {
+                "circle": {
+                    "center": {
+                    "latitude": nearby.lat,
+                    "longitude": nearby.lng
+                    },
+                    "radius": 500.0
+                }
+            }
+        params = json.dumps(params)
+        resp = self._post(url=endpoint, headers=headers, params=params)
         logger.debug(f"Places API call successful: {resp}")
         return Place(
-            id=resp["candidates"][0]["place_id"],
-            name=resp["candidates"][0]["name"],
-            address=resp["candidates"][0]["formatted_address"],
-            geo=resp["candidates"][0]["geometry"],
+            id=resp["places"][0]["name"].split("/")[1],
+            name=resp["places"][0]["displayName"]["text"],
+            address=resp["places"][0]["formattedAddress"],
+            address_components=resp["places"][0]["addressComponents"],
+            maps_uri=resp["places"][0]["googleMapsUri"],
+            lat=resp["places"][0]["location"]["latitude"],
+            lng=resp["places"][0]["location"]["longitude"],
+            is_origin = is_origin
         )
 
     def get_distances(

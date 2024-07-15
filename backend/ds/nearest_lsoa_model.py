@@ -76,7 +76,7 @@ def run_knn_lsoa():
     lsoa_out.set_index('name', inplace=True)
     joined = lsoa_out.join(postcode_lookup, how='left')
 
-    final = joined[['raw_rank', 'pctile', 'decile', 'pctile_stats', 'decile_stats', 'pcd8', ]]
+    final = joined[['raw_rank', 'pctile', 'decile', 'pctile_stats', 'decile_stats', 'pcds', ]]
     final.reset_index(inplace=True)
-    final = final.rename(columns={'pcd8': 'postcode'})
+    final = final.rename(columns={'pcds': 'postcode'})
     final.to_csv('imd_data_out.csv')

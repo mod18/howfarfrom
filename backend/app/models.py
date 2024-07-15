@@ -1,18 +1,30 @@
 from typing import List, Any, Dict, Union
 from pydantic import BaseModel
 from collections import defaultdict
+import pandas as pd
+
 
 class Place(BaseModel):
     id: str
     name: str = None
     address: str = None
+    address_components: list = None
     geo: Any = None
     lat: float = None
     lng: float = None
+    maps_uri: str = None
+    postcode: str = None
+    is_origin: bool
+    raw_rank: int = None
+    decile: int = None
+    decile_stats: dict = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._parse_geo()
+
+        self._get_postcode()
+        if self.is_origin:
+            self._get_imd_data()
 
     def __repr__(self):
         return f"""
@@ -25,9 +37,20 @@ class Place(BaseModel):
 
     def __eq__(self, other):
         return (self.name, self.address) == (other.name, other.address)
+    
+    def _get_postcode(self):
+        try:
+            self.postcode = self.address_components[6]['longText']
+        except:
+            self.postcode = 'Not found'
 
-    def _parse_geo(self):
-        self.lat, self.lng = self.geo["location"]["lat"], self.geo["location"]["lng"]
+    def _get_imd_data(self):
+        # TODO: REALLY NEED TO IMPLEMENT DATABASE
+        load_data = pd.read_csv("data/imd_data_out.csv")
+        imd_data = load_data[load_data["postcode"] == self.postcode]
+        imd_data.set_index("postcode", inplace=True)
+        imd_data = imd_data.to_dict()
+        self.raw_rank, self.decile, self.decile_stats = imd_data["raw_rank"][self.postcode], imd_data["decile"][self.postcode], imd_data["decile_stats"][self.postcode]
 
 
 class Journey(BaseModel):
@@ -65,9 +88,9 @@ class TravelMatrix(BaseModel):
         for journey in self.journeys:
             origin_id = journey.origin.id
             if origin_id not in self.formatted_matrix:
-                self.formatted_matrix[origin_id] = {'id': journey.origin.id, 'name': journey.origin.name, 'address': journey.origin.address, 'lat': journey.origin.lat, 'lng': journey.origin.lng}
+                self.formatted_matrix[origin_id] = {'id': journey.origin.id, 'name': journey.origin.name, 'address': journey.origin.address, 'lat': journey.origin.lat, 'lng': journey.origin.lng, 'raw_rank': journey.origin.raw_rank, 'decile': journey.origin.decile, 'decile_stats': journey.origin.decile_stats, 'maps_uri': journey.origin.maps_uri}
                 i = 1
-            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_time_mins': journey.travel_time_mins}}
+            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_time_mins': journey.travel_time_mins, }}
             i += 1
 
         """

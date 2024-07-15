@@ -46,9 +46,9 @@ async def root() -> dict:
     return {"message": "Hello World!"}
 
 @app.get("/cloud_api/get_place/{query}")
-async def get_place(query: str) -> Json:
+async def get_place(query: str, is_origin: bool) -> Json:
     q = CloudApiConnector()
-    place = q.get_place(query)
+    place = q.get_place(query, is_origin)
     return place.model_dump(include={'id', 'name', 'lat', 'lng'})
 
 @app.get("/cloud_api/get_distances/{query}")
