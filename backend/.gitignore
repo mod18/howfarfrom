@@ -1,2 +1,4 @@
 .env
-cloud_connector.log
+*.log
+.csv
+*.csv
