@@ -62,6 +62,11 @@ const updateInitBounds = (lat: number, lng: number) => {
   }
 };
 
+const getApiKey = async () => {
+  const resp = await axios.get(`http://localhost:3000/cloud_api/get_api_key`);
+  return resp
+};
+
 const App = () => {
   const [primaryLocation, setprimaryLocation] = useState(null);
 
@@ -231,7 +236,7 @@ const MapResult = ( {primaryLocation, journeys} ) => {
   console.log(locations)
     return (
     // TODO: Move this to backend API call; Customize region based on primaryLocation
-    <APIProvider apiKey={"AIzaSyAAdxwTltKCrrGOtUqCc-qdIeb8jQ1ktOs"} region='GB' onLoad={() => console.log('Maps API has loaded.')}>
+    <APIProvider apiKey={getApiKey} region='GB' onLoad={() => console.log('Maps API Loaded')}>
          <Map
             mapDiv='map-container'
             // defaultZoom={13}
@@ -336,8 +341,6 @@ const PoiMarkers = (props: { pois: Poi[] }) => {
     );
   };
   
-  
-
 const root = createRoot(document.getElementById('app'));
 root.render(<App />)
 export default App;

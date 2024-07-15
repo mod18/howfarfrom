@@ -1,12 +1,16 @@
 import json
 import logging
 import sys
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import Json
 from typing import Any
+from dotenv import load_dotenv
 from .cloud_api_connector import CloudApiConnector
 from .utils import compute_matrix
+
+load_dotenv()
 
 logger = logging.getLogger("__main_api__")
 logger.setLevel(logging.DEBUG)
@@ -55,3 +59,7 @@ async def get_place(query: str, is_origin: bool) -> Json:
 async def get_distances(query: str) -> Any:
     matrix = compute_matrix(json.loads(query))
     return matrix.model_dump(include={'formatted_matrix'})
+
+@app.get("cloud_api/get_api_key")
+async def get_api_key() -> str:
+    return os.environ.get("GOOGLE_API_KEY")
