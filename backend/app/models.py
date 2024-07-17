@@ -46,12 +46,15 @@ class Place(BaseModel):
 
     def _get_imd_data(self):
         # TODO: REALLY NEED TO IMPLEMENT DATABASE
+        self.raw_rank, self.decile, self.decile_stats = None, None, None
         try:
             load_data = pd.read_csv("data/imd_data_out.csv")
             imd_data = load_data[load_data["postcode"] == self.postcode]
             imd_data.set_index("postcode", inplace=True)
             imd_data = imd_data.to_dict()
             self.raw_rank, self.decile, self.decile_stats = imd_data["raw_rank"][self.postcode], imd_data["decile"][self.postcode], imd_data["decile_stats"][self.postcode]
+            if self.decile_stats == '{}':
+                self.decile_stats = 'Stats not available in Scotland and NI'
         except:
             pass
 
