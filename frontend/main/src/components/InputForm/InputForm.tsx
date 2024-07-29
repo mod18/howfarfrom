@@ -5,7 +5,7 @@ import './InputForm.css'
 
 
 type Poi = { key: string, location: google.maps.LatLngLiteral , is_primary_location: boolean}
-type Journey = { origin: string, destination: string, destination_address: string, travel_time_mins: number}
+type Journey = { origin: string, destination: string, destination_address: string, travel_mode: string, travel_time_mins: number}
 
 class Place { id: string; name: string; address: string; lat: string; lng: string; raw_rank: string; decile: string; decile_stats: string; maps_uri: string;
   constructor(id, name, address, lat, lng, raw_rank, decile, decile_stats, maps_uri) {
@@ -53,40 +53,45 @@ const updateInitBounds = (lat: number, lng: number) => {
 const InputForm = ({ onSubmit }) => {
     // Declare a state variable to hold the input value
     const [originValue, setOriginValue] = useState('');
-    const [destValue, setDestValue] = useState('');
-    const [moreDestValues, setMoreDestValues] = useState([{ value: ''}]);
+    const [moreDestValues, setMoreDestValues] = useState([{ value: '', travelModes: []}]);
     const [loading, setLoading] = useState(false); 
   
     // Handle input changes
     const handleOriginChange = (event) => {
       setOriginValue(event.target.value);
     };
-    const handleDestChange = (event) => {
-      setDestValue(event.target.value);
-    };
     const handleMoreDestChange = (index, event) => {
       const newDestFields = [...moreDestValues];
       newDestFields[index].value = event.target.value;
       setMoreDestValues(newDestFields);
     };
-  
+    const handleTravelModeChange = (index, mode, event) => {
+      const newDestFields = [...moreDestValues];
+      if (event.target.checked) {
+        newDestFields[index].travelModes.push(mode);
+      } else {
+        const modeIndex = newDestFields[index].travelModes.indexOf(mode);
+        if (modeIndex > -1) {
+          newDestFields[index].travelModes.splice(modeIndex, 1);
+        }
+      }
+      setMoreDestValues(newDestFields);
+    };
     const handleAddDestField = () => {
-      setMoreDestValues([...moreDestValues, { value: ''}]);
+      setMoreDestValues([...moreDestValues, { value: '', travelModes: []}]);
     };
   
     // Handle form submission
     const handleSubmit = async (event) => {
       event.preventDefault();
-      console.log('Form Values:', {originValue, destValue, moreDestValues});
+      console.log('Form Values:', {originValue, moreDestValues});
       setLoading(true)
       try {
-        let destVals = [destValue];
-        let totalDests = 1;
-        const moreDestValuesList = moreDestValues.map(field => field.value);
+        let destVals: string[] = [];
+        const moreDestValuesList = moreDestValues.map(field => [{'destination': field.value, 'travel_modes': field.travelModes}]);
         for (let i = 0; i < moreDestValuesList.length; i++) {
           if (moreDestValuesList[i] != '') {
             destVals.push(moreDestValuesList[i])
-            totalDests += 1
           };
         }
         let formMap = {};
@@ -101,14 +106,15 @@ const InputForm = ({ onSubmit }) => {
           locations.push({key: origin_data['name'], location: { lat: origin_data['lat'], lng: origin_data['lng']  }, is_primary_location: true})
           updateInitBounds(origin_data['lat'], origin_data['lng']);
           // load origin and destinations into locations for map
-          for (let i = 1; i <= totalDests; i++) {
+          for (let i = 1; i <= origin_data['num_journeys']; i++) {
             locations.push({key: origin_data[`dest${i}`]['name'], location: { lat: origin_data[`dest${i}`]['lat'], lng: origin_data[`dest${i}`]['lng']  }, is_primary_location: false});
             updateInitBounds(origin_data[`dest${i}`]['lat'], origin_data[`dest${i}`]['lng']);
-            journeys.push({origin: origin_data['name'], destination: origin_data[`dest${i}`]['name'], destination_address: origin_data[`dest${i}`]['address'], travel_time_mins: origin_data[`dest${i}`]['travel_time_mins']});
+            journeys.push({origin: origin_data['name'], destination: origin_data[`dest${i}`]['name'], destination_address: origin_data[`dest${i}`]['address'], travel_mode: origin_data[`dest${i}`]['travel_mode'], travel_time_mins: origin_data[`dest${i}`]['travel_time_mins']});
           }
         };
         const primaryLocation = new Place(origins[0]['id'], origins[0]['name'], origins[0]['address'], origins[0]['lat'], origins[0]['lng'], origins[0]['raw_rank'], origins[0]['decile'], origins[0]['decile_stats'], origins[0]['maps_uri'])
         console.log(primaryLocation)
+        console.log(journeys)
         onSubmit({ primaryLocation, journeys, locations, initBounds });
   
       } catch (error) {
@@ -120,39 +126,59 @@ const InputForm = ({ onSubmit }) => {
   
     return (
       <form className="inputform-container" onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="origin">Enter your starting address:</label>
+      <div>
+        <label htmlFor="origin">Enter your starting address:</label>
+        <input
+          type="text"
+          id="origin"
+          value={originValue}
+          onChange={handleOriginChange}
+        />
+      </div>
+      {moreDestValues.map((field, index) => (
+        <div key={index} className="form-group">
+          <label htmlFor={`additionalDest${index}`}>Enter a destination:</label>
           <input
             type="text"
-            id="origin"
-            value={originValue}
-            onChange={handleOriginChange}
+            id={`additionalDest${index}`}
+            value={field.value}
+            onChange={(event) => handleMoreDestChange(index, event)}
           />
-        </div>
-        <div>
-          <label htmlFor="origin">Enter a destination or point of interest:</label>
-          <input
-            type="text"
-            id="dest"
-            value={destValue}
-            onChange={handleDestChange}
-          />
-        </div>
-        {moreDestValues.map((field, index) => (
-          <div key={index}>
-            <label htmlFor={`additionalDest${index}`}>Enter another destination:</label>
-            <input
-              type="text"
-              id={`additionalDest${index}`}
-              value={field.value}
-              onChange={(event) => handleMoreDestChange(index, event)}
-            />
+          <div className="checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                name={`travelMode${index}`}
+                value="walking"
+                checked={field.travelModes.includes('walking')}
+                onChange={(event) => handleTravelModeChange(index, 'walking', event)}
+              /> Walking
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name={`travelMode${index}`}
+                value="driving"
+                checked={field.travelModes.includes('driving')}
+                onChange={(event) => handleTravelModeChange(index, 'driving', event)}
+              /> Driving
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                name={`travelMode${index}`}
+                value="transit"
+                checked={field.travelModes.includes('transit')}
+                onChange={(event) => handleTravelModeChange(index, 'transit', event)}
+              /> Transit
+            </label>
           </div>
-        ))}
-        <button type="button" onClick={handleAddDestField}>Add another?</button>
-        <button type="submit">Submit</button>
-        {loading && <p>Loading...</p>}
-      </form>
+        </div>
+      ))}
+      <button type="button" onClick={handleAddDestField}>Add another?</button>
+      <button type="submit">Submit</button>
+      {loading && <p>Loading...</p>}
+    </form>
     );
   };
 

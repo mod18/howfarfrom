@@ -126,7 +126,7 @@ class CloudApiConnector:
         )
 
     def get_distances(
-        self, origin_dest_map: Dict[Place, Place], output="json"
+        self, origin_dest_map: Dict[Place, List[Dict[Place, List[str]]]], output="json"
     ) -> TravelMatrix:
         """Gets the travel time and distance between origins and destinations
         
@@ -138,27 +138,30 @@ class CloudApiConnector:
         """
 
         endpoint = self.base_url + f"distancematrix/{output}"
-
+        journeys = []
         for origin in origin_dest_map.keys():
             enc_origin = urllib.parse.quote(f"place_id:{origin.id}")
-            enc_destinations = urllib.parse.quote(
-                "|".join([f"place_id:{dest.id}" for dest in origin_dest_map[origin]])
-            )
-            url = (
-                endpoint
-                + f"?origins={enc_origin}&destinations={enc_destinations}&key={self.api_key}"
-            )
-            resp = self._get(url=url)
-            logger.debug(f"Distance API call successful: {resp}")
+            for travel_mode in ['driving', 'walking', 'transit']:
+                destinations = [dest["destination"] for dest in origin_dest_map[origin] if travel_mode in dest["travel_modes"]]
+                enc_destinations = urllib.parse.quote(
+                    "|".join([f"place_id:{destination.id}" for destination in destinations])
+                )
+                if len(destinations) > 0:
+                    url = (
+                        endpoint
+                        + f"?origins={enc_origin}&destinations={enc_destinations}&mode={travel_mode}&key={self.api_key}"
+                    )
+                    resp = self._get(url=url)
+                    logger.debug(f"Distance API call successful: {resp}")
 
-            journeys = self._parse_journeys(
-                origin=origin, destinations=origin_dest_map[origin], resp=resp
-            )
+                    journeys += self._parse_journeys(
+                        origin=origin, destinations=destinations, travel_mode=travel_mode, resp=resp
+                    )
         return TravelMatrix(journeys)
 
     @staticmethod
     def _parse_journeys(
-        origin: Place, destinations: List[Place], resp: str
+        origin: Place, destinations: List[Place], travel_mode: str, resp: str
     ) -> List[Journey]:
         journeys, row_count = [], 0
         for destination in destinations:
@@ -166,6 +169,7 @@ class CloudApiConnector:
                 Journey(
                     origin=origin,
                     destination=destination,
+                    travel_mode=travel_mode,
                     travel_time_mins=resp["rows"][0]["elements"][row_count]["duration"][
                         "value"
                     ] // 60,

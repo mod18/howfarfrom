@@ -9,6 +9,7 @@ const JourneyTable = ({ journeys }) => {
           <tr>
             <th>Destination</th>
             <th>Address</th>
+            <th>Travel Mode</th>
             <th>Travel Time (Minutes)</th>
           </tr>
         </thead>
@@ -17,6 +18,7 @@ const JourneyTable = ({ journeys }) => {
               <tr key={journey.destination}>
               <td>{journey.destination}</td>
               <td>{journey.destination_address}</td>
+              <td>{journey.travel_mode}</td>
               <td>{journey.travel_time_mins}</td>
             </tr>
           ))}

@@ -2,3 +2,5 @@
 *.log
 .csv
 *.csv
+.pyc
+*.pyc

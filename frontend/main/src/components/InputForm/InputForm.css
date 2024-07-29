@@ -1,6 +1,6 @@
 /* InputForm.css */
 .inputform-container {
-    max-width: 600px;
+    max-width: 700px;
     margin: 0 auto;
     padding: 20px;
     border: 1px solid #ccc;
@@ -44,3 +44,13 @@
     color: #666;
   }
   
+  .form-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    gap: 10px;
+  }
