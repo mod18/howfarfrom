@@ -16,7 +16,7 @@ const JourneyTable = ({ journeys }) => {
         <tbody>
           {journeys.map((journey) => (
               <tr key={journey.destination}>
-              <td>{journey.destination}</td>
+              <td><a href={journey.maps_uri}>{journey.destination}</a></td>
               <td>{journey.destination_address}</td>
               <td>{journey.travel_mode}</td>
               <td>{journey.travel_time_mins}</td>

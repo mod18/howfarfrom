@@ -5,7 +5,7 @@ import './InputForm.css'
 
 
 type Poi = { key: string, location: google.maps.LatLngLiteral , is_primary_location: boolean}
-type Journey = { origin: string, destination: string, destination_address: string, travel_mode: string, travel_time_mins: number}
+type Journey = { origin: string, origin_address: string, destination: string, destination_address: string, travel_mode: string, travel_time_mins: number, maps_uri: string}
 
 class Place { id: string; name: string; address: string; lat: string; lng: string; raw_rank: string; decile: string; decile_stats: string; maps_uri: string;
   constructor(id, name, address, lat, lng, raw_rank, decile, decile_stats, maps_uri) {
@@ -49,6 +49,12 @@ const updateInitBounds = (lat: number, lng: number) => {
         }
     }
     };
+
+const buildMapsRef = (origin, destination) => {
+  const encOrigin = encodeURIComponent(origin)
+  const encDestination = encodeURIComponent(destination)
+  return `https://google.com/maps/dir/${encOrigin}/${encDestination}`
+};
 
 const InputForm = ({ onSubmit }) => {
     // Declare a state variable to hold the input value
@@ -109,7 +115,8 @@ const InputForm = ({ onSubmit }) => {
           for (let i = 1; i <= origin_data['num_journeys']; i++) {
             locations.push({key: origin_data[`dest${i}`]['name'], location: { lat: origin_data[`dest${i}`]['lat'], lng: origin_data[`dest${i}`]['lng']  }, is_primary_location: false});
             updateInitBounds(origin_data[`dest${i}`]['lat'], origin_data[`dest${i}`]['lng']);
-            journeys.push({origin: origin_data['name'], destination: origin_data[`dest${i}`]['name'], destination_address: origin_data[`dest${i}`]['address'], travel_mode: origin_data[`dest${i}`]['travel_mode'], travel_time_mins: origin_data[`dest${i}`]['travel_time_mins']});
+            const mapsUri = buildMapsRef(origin_data['address'], origin_data[`dest${i}`]['address']);
+            journeys.push({origin: origin_data['name'], origin_address: origin_data['address'], destination: origin_data[`dest${i}`]['name'], destination_address: origin_data[`dest${i}`]['address'], travel_mode: origin_data[`dest${i}`]['travel_mode'], travel_time_mins: origin_data[`dest${i}`]['travel_time_mins'], maps_uri: mapsUri});
           }
         };
         const primaryLocation = new Place(origins[0]['id'], origins[0]['name'], origins[0]['address'], origins[0]['lat'], origins[0]['lng'], origins[0]['raw_rank'], origins[0]['decile'], origins[0]['decile_stats'], origins[0]['maps_uri'])
