@@ -1,0 +1,83 @@
+/* MapResult.css */
+
+#map-container {
+  height: 500px; /* Adjust height as needed */
+  width: 100%;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.map-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.map-header a {
+  text-decoration: none;
+  color: #4CAF50;
+}
+
+.map-header h1 {
+  font-size: 24px;
+  color: #4CAF50;
+  margin: 10px 0;
+}
+
+.map-address {
+  text-align: center;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.journey-table-container,
+.imd-data-table-container {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.journey-table-container h1,
+.imd-data-table-container h1 {
+  font-size: 20px;
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+.journey-table-container table,
+.imd-data-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.journey-table-container th,
+.imd-data-table-container th,
+.journey-table-container td,
+.imd-data-table-container td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+.journey-table-container tbody tr:nth-child(even),
+.imd-data-table-container tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.journey-table-container tbody tr:hover,
+.imd-data-table-container tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.journey-table-container th,
+.imd-data-table-container th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.journey-table-container td,
+.imd-data-table-container td {
+  color: #333;
+}
