@@ -18,15 +18,11 @@ import './MapResult.css';
 
 type Poi = { key: string, location: google.maps.LatLngLiteral , is_primary_location: boolean}
 
-const getApiKey = async () => {
-    const resp = await axios.get(`http://localhost:3000/cloud_api/get_api_key`);
-    return resp;
-};
 
 const MapResult = ({primaryLocation, journeys, locations, initBounds}) => {
     console.log(locations);
     return (
-      <APIProvider apiKey={getApiKey} region='GB' onLoad={() => console.log('Maps API Loaded')}>
+      <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY} region='GB' onLoad={() => console.log('Maps API Loaded')}>
         <div className="map-header">
           <a href={primaryLocation.maps_uri}>
             <h1>{primaryLocation.name}</h1>

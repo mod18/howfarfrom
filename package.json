@@ -3,6 +3,7 @@
     "dotenv": "^16.4.5"
   },
   "devDependencies": {
+    "@types/google.maps": "^3.55.12",
     "@types/node": "^20.14.10"
   }
 }
