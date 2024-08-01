@@ -3,8 +3,21 @@ import axios from 'axios';
 
 import './InputForm.css';
 
-type Poi = { key: string; location: google.maps.LatLngLiteral; is_primary_location: boolean };
-type Journey = { origin: string; origin_address: string; destination: string; destination_address: string; travel_mode: string; travel_time_mins: number; maps_uri: string };
+type Poi = {
+  key: string;
+  location: google.maps.LatLngLiteral;
+  is_primary_location: boolean;
+};
+
+type Journey = {
+  origin: string;
+  origin_address: string;
+  destination: string;
+  destination_address: string;
+  travel_mode: string;
+  travel_time_mins: number;
+  maps_uri: string;
+};
 
 class Place {
   id: string;
@@ -17,7 +30,17 @@ class Place {
   decile_stats: string;
   maps_uri: string;
 
-  constructor(id: string, name: string, address: string, lat: string, lng: string, raw_rank: string, decile: string, decile_stats: string, maps_uri: string) {
+  constructor(
+    id: string,
+    name: string,
+    address: string,
+    lat: string,
+    lng: string,
+    raw_rank: string,
+    decile: string,
+    decile_stats: string,
+    maps_uri: string
+  ) {
     this.id = id;
     this.name = name;
     this.address = address;
@@ -62,7 +85,11 @@ const buildMapsRef = (origin: string, destination: string) => {
   return `https://google.com/maps/dir/${encOrigin}/${encDestination}`;
 };
 
-const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; journeys: Journey[]; locations: Poi[]; initBounds: any }) => void }) => {
+const InputForm = ({
+  onSubmit,
+}: {
+  onSubmit: (data: { primaryLocation: Place; journeys: Journey[]; locations: Poi[]; initBounds: any }) => void;
+}) => {
   const [originValue, setOriginValue] = useState('');
   const [originLoc, setOriginLoc] = useState('');
   const [moreDestValues, setMoreDestValues] = useState([{ value: '', travelModes: [] }]);
@@ -71,54 +98,64 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
   const destinationInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    const loadGoogleMapsScript = async () => {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
+    const loadGoogleMapsScript = () => {
+      if (!document.querySelector(`script[src="https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete"]`)) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      } else {
+        // If the script already exists, initialize autocomplete directly
+        window.initAutocomplete();
+      }
     };
-
+  
     loadGoogleMapsScript();
-
+  
     // @ts-ignore
     window.initAutocomplete = () => {
       if (originInputRef.current) {
         const options = {
-          componentRestrictions: { country: ["us", "gb"] },
-          fields: ["formatted_address", "geometry", "icon", "name"],
+          componentRestrictions: { country: ['us', 'gb'] },
+          fields: ['formatted_address', 'geometry', 'icon', 'name'],
           strictBounds: false,
         };
-
+  
         const autocomplete = new google.maps.places.Autocomplete(originInputRef.current, options);
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace();
           if (place.geometry) {
-            setOriginValue(place.formatted_address || '');
-            const originLoc = { north: place.geometry.location?.lat() || 0, south: place.geometry.location?.lat() || 0, east: place.geometry.location?.lng() || 0, west: place.geometry.location?.lng() || 0 };
-            setOriginLoc(originLoc)
+            setOriginValue(''.concat(place.name || '').concat(' ').concat(place.formatted_address || '') || '');
+            const originLoc = {
+              north: place.geometry.location?.lat() || 0,
+              south: place.geometry.location?.lat() || 0,
+              east: place.geometry.location?.lng() || 0,
+              west: place.geometry.location?.lng() || 0,
+            };
+            setOriginLoc(originLoc);
           }
         });
       }
-
+  
       moreDestValues.forEach((_, index) => {
         if (destinationInputRefs.current[index]) {
-          let options = {
-            componentRestrictions: { country: ["us", "gb"] },
-            fields: ["formatted_address", "geometry", "icon", "name"],
+          const options = {
+            componentRestrictions: { country: ['us', 'gb'] },
+            fields: ['formatted_address', 'geometry', 'icon', 'name'],
             strictBounds: false,
           };
-
+  
           if (originLoc !== '') {
-            options['bounds'] = originLoc
-            };
-
+            options['bounds'] = originLoc;
+          }
+  
           const autocomplete = new google.maps.places.Autocomplete(destinationInputRefs.current[index]!, options);
           autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
             if (place.geometry) {
               const newDestValues = [...moreDestValues];
-              newDestValues[index].value = place.name || '';
+              newDestValues[index].value = ''.concat(place.name || '').concat(' ').concat(place.formatted_address || '') || '';
               setMoreDestValues(newDestValues);
             }
           });
@@ -126,6 +163,7 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
       });
     };
   }, [moreDestValues]);
+  
 
   const handleOriginChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setOriginValue(event.target.value);
@@ -156,7 +194,6 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('Form Values:', { originValue, moreDestValues });
     setLoading(true);
     try {
       let destVals: string[] = [];
@@ -169,16 +206,26 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
       let formMap = {};
       formMap[originValue] = destVals;
       console.log(JSON.stringify(formMap));
-      const resp = await axios.get(`http://localhost:3000/cloud_api/get_distances/${JSON.stringify(formMap)}`);
+      const resp = await axios.get(
+        `http://localhost:3000/cloud_api/get_distances/${JSON.stringify(formMap)}`
+      );
 
-      let origins: string[] = [];
+      const origins: string[] = [];
       for (const key in resp.data['formatted_matrix']) {
-        let origin_data = resp.data['formatted_matrix'][key];
+        const origin_data = resp.data['formatted_matrix'][key];
         origins.push(origin_data);
-        locations.push({ key: origin_data['name'], location: { lat: origin_data['lat'], lng: origin_data['lng'] }, is_primary_location: true });
+        locations.push({
+          key: origin_data['name'],
+          location: { lat: origin_data['lat'], lng: origin_data['lng'] },
+          is_primary_location: true,
+        });
         updateInitBounds(origin_data['lat'], origin_data['lng']);
         for (let i = 1; i <= origin_data['num_journeys']; i++) {
-          locations.push({ key: origin_data[`dest${i}`]['name'], location: { lat: origin_data[`dest${i}`]['lat'], lng: origin_data[`dest${i}`]['lng'] }, is_primary_location: false });
+          locations.push({
+            key: origin_data[`dest${i}`]['name'],
+            location: { lat: origin_data[`dest${i}`]['lat'], lng: origin_data[`dest${i}`]['lng'] },
+            is_primary_location: false,
+          });
           updateInitBounds(origin_data[`dest${i}`]['lat'], origin_data[`dest${i}`]['lng']);
           const mapsUri = buildMapsRef(origin_data['address'], origin_data[`dest${i}`]['address']);
           journeys.push({
@@ -188,15 +235,24 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
             destination_address: origin_data[`dest${i}`]['address'],
             travel_mode: origin_data[`dest${i}`]['travel_mode'],
             travel_time_mins: origin_data[`dest${i}`]['travel_time_mins'],
-            maps_uri: mapsUri
+            maps_uri: mapsUri,
           });
         }
-      };
-      const primaryLocation = new Place(origins[0]['id'], origins[0]['name'], origins[0]['address'], origins[0]['lat'], origins[0]['lng'], origins[0]['raw_rank'], origins[0]['decile'], origins[0]['decile_stats'], origins[0]['maps_uri']);
-      console.log(primaryLocation);
-      console.log(journeys);
-      onSubmit({ primaryLocation, journeys, locations, initBounds });
+      }
 
+      const primaryLocation = new Place(
+        origins[0]['id'],
+        origins[0]['name'],
+        origins[0]['address'],
+        origins[0]['lat'],
+        origins[0]['lng'],
+        origins[0]['raw_rank'],
+        origins[0]['decile'],
+        origins[0]['decile_stats'],
+        origins[0]['maps_uri']
+      );
+
+      onSubmit({ primaryLocation, journeys, locations, initBounds });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -225,40 +281,27 @@ const InputForm = ({ onSubmit }: { onSubmit: (data: { primaryLocation: Place; jo
               id={`additionalDest${index}`}
               value={field.value}
               onChange={(event) => handleMoreDestChange(index, event)}
-              ref={(el) => destinationInputRefs.current[index] = el}
+              ref={(el) => (destinationInputRefs.current[index] = el)}
             />
             <div className="checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name={`travelMode${index}`}
-                  value="walking"
-                  checked={field.travelModes.includes('walking')}
-                  onChange={(event) => handleTravelModeChange(index, 'walking', event)}
-                /> Walking
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  name={`travelMode${index}`}
-                  value="driving"
-                  checked={field.travelModes.includes('driving')}
-                  onChange={(event) => handleTravelModeChange(index, 'driving', event)}
-                /> Driving
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  name={`travelMode${index}`}
-                  value="transit"
-                  checked={field.travelModes.includes('transit')}
-                  onChange={(event) => handleTravelModeChange(index, 'transit', event)}
-                /> Transit
-              </label>
+              {['walking', 'driving', 'transit'].map((mode) => (
+                <label key={mode}>
+                  <input
+                    type="checkbox"
+                    name={`travelMode${index}`}
+                    value={mode}
+                    checked={field.travelModes.includes(mode)}
+                    onChange={(event) => handleTravelModeChange(index, mode, event)}
+                  />{' '}
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </label>
+              ))}
             </div>
           </div>
         ))}
-        <button type="button" onClick={handleAddDestField}>Add another?</button>
+        <button type="button" onClick={handleAddDestField}>
+          Add another?
+        </button>
         <button type="submit">Submit</button>
         {loading && <p>Loading...</p>}
       </form>
