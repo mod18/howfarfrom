@@ -31,3 +31,19 @@ table {
   td {
     color: #333;
   }
+
+  .JourneyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.JourneyTable th, .JourneyTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.JourneyTable th {
+    background-color: #f4f4f4;
+    text-align: left;
+}

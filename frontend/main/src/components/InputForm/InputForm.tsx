@@ -94,21 +94,23 @@ const InputForm = ({
   const [originLoc, setOriginLoc] = useState('');
   const [moreDestValues, setMoreDestValues] = useState([{ value: '', travelModes: [] }]);
   const [loading, setLoading] = useState(false);
+  const [country, setCountry] = useState('us');
+
   const originInputRef = useRef<HTMLInputElement>(null);
   const destinationInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
     const loadGoogleMapsScript = () => {
-      if (!document.querySelector(`script[src="https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete"]`)) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete`;
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-      } else {
-        // If the script already exists, initialize autocomplete directly
-        window.initAutocomplete();
+      const existingScript = document.querySelector(`script[src="https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete"]`);
+      if (existingScript) {
+        existingScript.remove();
       }
+  
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initAutocomplete`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
     };
   
     loadGoogleMapsScript();
@@ -117,7 +119,7 @@ const InputForm = ({
     window.initAutocomplete = () => {
       if (originInputRef.current) {
         const options = {
-          componentRestrictions: { country: ['us', 'gb'] },
+          componentRestrictions: { country },
           fields: ['formatted_address', 'geometry', 'icon', 'name'],
           strictBounds: false,
         };
@@ -141,7 +143,7 @@ const InputForm = ({
       moreDestValues.forEach((_, index) => {
         if (destinationInputRefs.current[index]) {
           const options = {
-            componentRestrictions: { country: ['us', 'gb'] },
+            componentRestrictions: { country },
             fields: ['formatted_address', 'geometry', 'icon', 'name'],
             strictBounds: false,
           };
@@ -162,7 +164,7 @@ const InputForm = ({
         }
       });
     };
-  }, [moreDestValues]);
+  }, [moreDestValues, country]);
   
 
   const handleOriginChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,6 +192,10 @@ const InputForm = ({
 
   const handleAddDestField = () => {
     setMoreDestValues([...moreDestValues, { value: '', travelModes: [] }]);
+  };
+
+  const handleCountryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCountry(event.target.value);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -263,6 +269,28 @@ const InputForm = ({
   return (
     <>
       <form className="inputform-container" onSubmit={handleSubmit}>
+          <div className="radio-group"> Where are you searching today?
+            <label>
+              <input
+                type="radio"
+                name="country"
+                value="us"
+                checked={country === 'us'}
+                onChange={handleCountryChange}
+              />
+              US
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="country"
+                value="gb"
+                checked={country === 'gb'}
+                onChange={handleCountryChange}
+              />
+              UK
+            </label>
+        </div>
         <div>
           <label htmlFor="origin">Enter your starting address:</label>
           <input

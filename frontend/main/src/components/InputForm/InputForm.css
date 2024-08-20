@@ -72,3 +72,73 @@
   color: #666;
   margin-top: 10px;
 }
+
+.InputForm {
+  width: 80%;
+  max-width: 600px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.InputForm label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.InputForm input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.InputForm .checkbox-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.InputForm .checkbox-group label {
+  font-weight: normal;
+}
+
+.InputForm button {
+  display: inline-block;
+  background-color: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.InputForm button:hover {
+  background-color: #1666c1;
+}
+
+.InputForm p {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #888;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.radio-group label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.radio-group input {
+  margin-right: 5px;
+}
