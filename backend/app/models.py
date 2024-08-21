@@ -78,14 +78,16 @@ class Place(BaseModel):
 class Journey(BaseModel):
     origin: Place
     destination: Place
-    travel_mode: str
-    travel_time_mins: int
+    travel_modes: List[Dict[str, Any]] = []
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def __repr__(self):
-        return f"Journey ({self.origin.name} -> {self.destination.name}: {self.travel_time_mins} ({self.travel_mode}))"
+        return f"Journey ({self.origin.name} -> {self.destination.name}))"
+    
+    def merge(self, other_journey):
+        self.travel_modes.append(other_journey.travel_modes[0])
 
 
 class TravelMatrix(BaseModel):
@@ -113,7 +115,7 @@ class TravelMatrix(BaseModel):
             if origin_id not in self.formatted_matrix:
                 self.formatted_matrix[origin_id] = {'id': journey.origin.id, 'name': journey.origin.name, 'address': journey.origin.address, 'lat': journey.origin.lat, 'lng': journey.origin.lng, 'raw_rank': journey.origin.raw_rank, 'decile': journey.origin.decile, 'decile_stats': journey.origin.decile_stats, 'maps_uri': journey.origin.maps_uri, 'num_journeys': len(self.journeys)}
                 i = 1
-            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_mode': journey.travel_mode, 'travel_time_mins': journey.travel_time_mins}}
+            self.formatted_matrix[origin_id] = self.formatted_matrix[origin_id] | {f'dest{i}': {'id': journey.destination.id, 'name': journey.destination.name, 'address': journey.destination.address, 'lat': journey.destination.lat, 'lng': journey.destination.lng, 'travel_modes': journey.travel_modes}}
             i += 1
 
         """

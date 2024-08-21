@@ -138,7 +138,7 @@ class CloudApiConnector:
         """
 
         endpoint = self.base_url + f"distancematrix/{output}"
-        journeys = []
+        journeys = {}
         for origin in origin_dest_map.keys():
             enc_origin = urllib.parse.quote(f"place_id:{origin.id}")
             for travel_mode in ['driving', 'walking', 'transit']:
@@ -154,14 +154,19 @@ class CloudApiConnector:
                     resp = self._get(url=url)
                     logger.debug(f"Distance API call successful: {resp}")
 
-                    journeys += self._parse_journeys(
+                    journeys_raw = self._parse_journeys(
                         origin=origin, destinations=destinations, travel_mode=travel_mode, resp=resp
                     )
-        return TravelMatrix(journeys)
+                    for journey in journeys_raw:
+                        if journey.destination.id not in journeys:
+                            journeys[journey.destination.id] = journey
+                        else:
+                            journeys[journey.destination.id].merge(journey)
 
-    @staticmethod
+        return TravelMatrix(list(journeys.values()))
+
     def _parse_journeys(
-        origin: Place, destinations: List[Place], travel_mode: str, resp: str
+        self, origin: Place, destinations: List[Place], travel_mode: str, resp: str
     ) -> List[Journey]:
         journeys, row_count = [], 0
         for destination in destinations:
@@ -169,11 +174,24 @@ class CloudApiConnector:
                 Journey(
                     origin=origin,
                     destination=destination,
-                    travel_mode=travel_mode,
-                    travel_time_mins=resp["rows"][0]["elements"][row_count]["duration"][
-                        "value"
-                    ] // 60,
+                    travel_modes=[{"travel_mode": travel_mode.capitalize(), "travel_time_mins": resp["rows"][0]["elements"][row_count]["duration"]["value"] // 60, "maps_uri": self._build_maps_uri(origin, destination, travel_mode)}]
                 )
             )
             row_count += 1
         return journeys
+    
+    @staticmethod
+    def _build_maps_uri(
+        origin: Place, destination: Place, travel_mode: str
+    ) -> str:
+        parameters = {
+            "api": 1,
+            "origin": origin.address,
+            "origin_place_id": origin.id,
+            "destination": destination.address,
+            "destination_place_id": destination.id,
+            "travelmode": travel_mode,
+        }
+        uri = "https://www.google.com/maps/dir/?"
+        uri += urllib.parse.urlencode(parameters)
+        return uri

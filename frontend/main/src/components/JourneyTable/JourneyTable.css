@@ -1,49 +1,73 @@
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 18px;
-    text-align: left;
-  }
-  
-  thead {
-    background-color: #f4f4f4;
-  }
-  
-  th, td {
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-  }
-  
-  tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-  }
-  
-  tbody tr:hover {
-    background-color: #f1f1f1;
-  }
-  
-  th {
-    background-color: #4CAF50;
-    color: white;
-  }
-  
-  td {
-    color: #333;
-  }
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 18px;
+  text-align: left;
+}
 
-  .JourneyTable {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+thead {
+  background-color: #ffe082;
+}
+
+th, td {
+  padding: 14px 18px;
+  border: 1px solid #ffbe76; 
+}
+
+tbody tr:nth-child(even) {
+  background-color: #fff3e0; 
+}
+
+tbody tr:hover {
+  background-color: #ffe0b2; 
+}
+
+th {
+  background-color: #ffa726; 
+  color: white;
+}
+
+td {
+  color: #ff6b6b; 
+}
+
+.JourneyTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
 }
 
 .JourneyTable th, .JourneyTable td {
-    border: 1px solid #ddd;
-    padding: 8px;
+  border: 1px solid #ffbe76; 
+  padding: 10px 15px;
 }
 
 .JourneyTable th {
-    background-color: #f4f4f4;
-    text-align: left;
+  background-color: #ffa726; 
+  text-align: left;
+  color: white;
+}
+
+.nested-table-container {
+  overflow-x: auto; /* Helps if the nested table is wider than the cell */
+}
+
+.nested-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.nested-table td {
+  padding: 5px;
+  border: 1px solid #ddd;
+}
+
+.nested-table td a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.nested-table td a:hover {
+  text-decoration: underline;
 }

@@ -19,37 +19,68 @@ import './MapResult.css';
 type Poi = { key: string, location: google.maps.LatLngLiteral , is_primary_location: boolean}
 
 
-const MapResult = ({primaryLocation, journeys, locations, initBounds}) => {
+const MapResult = ({ country, primaryLocation, journeys, locations, initBounds }) => {
     console.log(locations);
-    return (
-      <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY} region='GB' onLoad={() => console.log('Maps API Loaded')}>
-        <div className="map-header">
-          <a href={primaryLocation.maps_uri}>
-            <h1>{primaryLocation.name}</h1>
-          </a>
-          <div className="map-address">
-            {primaryLocation.address}
+    console.log(country)
+    if (country === "gb") {
+      return (
+        <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY} region='GB' onLoad={() => console.log('Maps API Loaded')}>
+          <div className="map-header">
+            <a href={primaryLocation.maps_uri}>
+              <h1>{primaryLocation.name}</h1>
+            </a>
+            <div className="map-address">
+              {primaryLocation.address}
+            </div>
           </div>
-        </div>
-        <Map
-          mapDiv='map-container'
-          defaultBounds={{north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']}}
-          mapId='1fc6d54c8b4d8b02'
-          reuseMaps={true}
-          onCameraChanged={(ev: MapCameraChangedEvent) => console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)}
-        >
-          <PoiMarkers pois={locations} />
-        </Map>
-        <div className="journey-table-container">
-          <h1>Journey Table</h1>
-          <JourneyTable journeys={journeys} />
-        </div>
-        <div className="imd-data-table-container">
-          <h1>IMD Data</h1>
-          <ImdDataTable primaryLocation={primaryLocation} />
-        </div>
-      </APIProvider>
-    );
+          <Map
+            mapDiv='map-container'
+            defaultBounds={{north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']}}
+            mapId='1fc6d54c8b4d8b02'
+            reuseMaps={true}
+            onCameraChanged={(ev: MapCameraChangedEvent) => console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)}
+          >
+            <PoiMarkers pois={locations} />
+          </Map>
+          <div className="journey-table-container">
+            <h1>Journey Table</h1>
+            <JourneyTable journeys={journeys} />
+          </div>
+          <div className="imd-data-table-container">
+            <h1>IMD Data</h1>
+            <ImdDataTable primaryLocation={primaryLocation} />
+          </div>
+        </APIProvider>
+      );
+    }
+    else {
+      return (
+        <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY} region='GB' onLoad={() => console.log('Maps API Loaded')}>
+          <div className="map-header">
+            <a href={primaryLocation.maps_uri}>
+              <h1>{primaryLocation.name}</h1>
+            </a>
+            <div className="map-address">
+              {primaryLocation.address}
+            </div>
+          </div>
+          <Map
+            mapDiv='map-container'
+            defaultBounds={{north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']}}
+            mapId='1fc6d54c8b4d8b02'
+            reuseMaps={true}
+            onCameraChanged={(ev: MapCameraChangedEvent) => console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)}
+          >
+            <PoiMarkers pois={locations} />
+          </Map>
+          <div className="journey-table-container">
+            <h1>Journey Table</h1>
+            <JourneyTable journeys={journeys} />
+          </div>
+        </APIProvider>
+      );
+    }
+
 };
 
 const PoiMarkers = (props: { pois: Poi[] }) => {

@@ -19,12 +19,14 @@ import MapResult from './components/MapResult/MapResult.tsx';
 
 
 const App = () => {
+  const [country, setCountry] = useState(null);
   const [primaryLocation, setPrimaryLocation] = useState(null);
   const [journeys, setJourneys] = useState([]);
   const [locations, setLocations] = useState([]);
   const [initBounds, setInitBounds] = useState(null);
 
-  const handleFormSubmit = async ({ primaryLocation, journeys, locations, initBounds }) => {
+  const handleFormSubmit = async ({ country, primaryLocation, journeys, locations, initBounds }) => {
+    setCountry(country);
     setPrimaryLocation(primaryLocation);
     setJourneys(journeys);
     setLocations(locations);
@@ -37,7 +39,7 @@ const App = () => {
       {primaryLocation === null ? (
         <InputForm onSubmit={handleFormSubmit} />
       ) : (
-        <MapResult primaryLocation={primaryLocation} journeys={journeys} locations={locations} initBounds={initBounds} />
+        <MapResult country={country} primaryLocation={primaryLocation} journeys={journeys} locations={locations} initBounds={initBounds} />
       )}
     </div>
   )

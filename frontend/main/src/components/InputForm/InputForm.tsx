@@ -14,9 +14,7 @@ type Journey = {
   origin_address: string;
   destination: string;
   destination_address: string;
-  travel_mode: string;
-  travel_time_mins: number;
-  maps_uri: string;
+  travel_modes: Array<Map<string, string>>; // [{travel_mode: travel_mode, travel_time_mins: travel_time_mins, maps_uri: maps_uri}]
 };
 
 class Place {
@@ -79,16 +77,10 @@ const updateInitBounds = (lat: number, lng: number) => {
   }
 };
 
-const buildMapsRef = (origin: string, destination: string) => {
-  const encOrigin = encodeURIComponent(origin);
-  const encDestination = encodeURIComponent(destination);
-  return `https://google.com/maps/dir/${encOrigin}/${encDestination}`;
-};
-
 const InputForm = ({
   onSubmit,
 }: {
-  onSubmit: (data: { primaryLocation: Place; journeys: Journey[]; locations: Poi[]; initBounds: any }) => void;
+  onSubmit: (data: { country: string; primaryLocation: Place; journeys: Journey[]; locations: Poi[]; initBounds: any }) => void;
 }) => {
   const [originValue, setOriginValue] = useState('');
   const [originLoc, setOriginLoc] = useState('');
@@ -233,15 +225,12 @@ const InputForm = ({
             is_primary_location: false,
           });
           updateInitBounds(origin_data[`dest${i}`]['lat'], origin_data[`dest${i}`]['lng']);
-          const mapsUri = buildMapsRef(origin_data['address'], origin_data[`dest${i}`]['address']);
           journeys.push({
             origin: origin_data['name'],
             origin_address: origin_data['address'],
             destination: origin_data[`dest${i}`]['name'],
             destination_address: origin_data[`dest${i}`]['address'],
-            travel_mode: origin_data[`dest${i}`]['travel_mode'],
-            travel_time_mins: origin_data[`dest${i}`]['travel_time_mins'],
-            maps_uri: mapsUri,
+            travel_modes: origin_data[`dest${i}`]['travel_modes'],
           });
         }
       }
@@ -258,7 +247,7 @@ const InputForm = ({
         origins[0]['maps_uri']
       );
 
-      onSubmit({ primaryLocation, journeys, locations, initBounds });
+      onSubmit({ country, primaryLocation, journeys, locations, initBounds });
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -269,7 +258,7 @@ const InputForm = ({
   return (
     <>
       <form className="inputform-container" onSubmit={handleSubmit}>
-          <div className="radio-group"> Where are you searching today?
+          <div className="radio-group"> Where are you searching today?<br></br>
             <label>
               <input
                 type="radio"
