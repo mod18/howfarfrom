@@ -1,152 +1,92 @@
-.InputForm button {
-  display: inline-block;
-  background-color: #1a73e8;
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-right: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.InputForm button:hover {
-  background-color: #1666c1;
-}
-
-.InputForm p {
-  margin-top: 10px;
-  font-size: 1rem;
-  color: #666;
-}
-.inputform-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 25px;
+/* General Styling for the Input Form Component */
+.inputform-container, .InputForm {
+  width: 100%;
   background-color: #fff7e1;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   margin-bottom: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.inputform-container div {
-  margin-bottom: 15px;
+/* Form Element Styling */
+.inputform-container div, .InputForm div {
   width: 100%;
-  max-width: 500px;
-  display: block;
-  font-size: 18px;
+  margin-bottom: 15px;
   color: #ff6b6b;
 }
 
-.inputform-container label {
-  display: block;
+.inputform-container label, .InputForm label {
   font-size: 18px;
   color: #ff6b6b;
   margin-bottom: 8px;
 }
 
-.inputform-container input[type="text"] {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ffbe76;
-  border-radius: 6px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+/* Input Field and Button Alignment Fix */
+.inputform-container input[type="text"], 
+.InputForm input[type="text"] {
+    width: 100%; /* Ensure the input takes up the full width */
+    padding: 12px; /* Same padding as the button */
+    border: 1px solid #ffbe76;
+    border-radius: 6px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    margin-bottom: 10px;
+    box-sizing: border-box; /* Include padding and border in element's width */
 }
 
-.inputform-container .form-group {
-  display: flex;
-  flex-direction: column;
+/* Button Styling */
+.inputform-container button, .InputForm button {
+    width: 100%; /* Match the input field width */
+    padding: 12px; /* Same padding as the input */
+    font-size: 18px;
+    color: white;
+    background-color: #ffa726;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* Include padding and border in element's width */
 }
 
-.inputform-container .checkbox-group {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-.inputform-container .checkbox-group label {
-  font-size: 16px;
-  color: #ff6b6b;
-}
-
-.inputform-container .checkbox-group input {
-  margin-right: 5px;
-}
-
-.inputform-container button {
-  padding: 12px 24px;
-  font-size: 18px;
-  color: white;
-  background-color: #ffa726;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.inputform-container button:hover {
+.inputform-container button:hover, 
+.InputForm button:hover {
   background-color: #fb8c00;
 }
 
-.inputform-container p {
-  font-size: 16px;
-  color: #888;
-  margin-top: 10px;
-}
-
-.InputForm {
-  width: 80%;
-  max-width: 600px;
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  margin-top: 20px;
-}
-
-.InputForm label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  color: #ff6b6b;
-}
-
-.InputForm input[type="text"] {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 10px;
-  border: 1px solid #ffbe76;
-  border-radius: 6px;
-  background-color: #fff;
-}
-
-.InputForm .checkbox-group {
+/* Checkbox and Radio Group Styling */
+.inputform-container .checkbox-group, 
+.InputForm .checkbox-group, 
+.radio-group {
   display: flex;
+  font-size: 18px;
   gap: 10px;
   margin-bottom: 10px;
 }
 
-.InputForm .checkbox-group label {
+.inputform-container .checkbox-group label, 
+.InputForm .checkbox-group label, 
+.radio-group label {
   font-weight: normal;
   color: #ff6b6b;
-}
-
-.radio-group {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.radio-group label {
-  margin-top:10px;
   display: inline-flex;
   align-items: center;
-  color: #ff6b6b;
 }
 
+.inputform-container .checkbox-group input,
+.InputForm .checkbox-group input, 
 .radio-group input {
-  margin-right: 8px;
+  margin-right: 5px;
+}
+
+/* Additional Styling for Descriptive Text */
+.inputform-container p, .InputForm p {
+  font-size: 16px;
+  color: #888;
+  margin-top: 10px;
+  text-align: center;
 }

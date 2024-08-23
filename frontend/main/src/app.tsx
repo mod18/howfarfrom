@@ -34,7 +34,7 @@ const App = () => {
   };
 
   return (
-    <div id='map-container'>
+    <div class="middle-container" id='outline'>
       <h1>HowFarFrom</h1>
       {primaryLocation === null ? (
         <InputForm onSubmit={handleFormSubmit} />
