@@ -25,30 +25,34 @@ const MapResult = ({ country, primaryLocation, journeys, locations, initBounds }
     if (country === "gb") {
       return (
         <APIProvider apiKey={process.env.GOOGLE_MAPS_API_KEY} region='GB' onLoad={() => console.log('Maps API Loaded')}>
-          <div className="map-header">
-            <a href={primaryLocation.maps_uri}>
-              <h1>{primaryLocation.name}</h1>
-            </a>
-            <div className="map-address">
-              {primaryLocation.address}
+          <div className="map-result-container">
+            <div className="map-header">
+              <a href={primaryLocation.maps_uri}>
+                <h1>{primaryLocation.name}</h1>
+              </a>
+              <div className="map-address">
+                {primaryLocation.address}
+              </div>
             </div>
-          </div>
-          <Map
-            mapDiv='map-container'
-            defaultBounds={{north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']}}
-            mapId='1fc6d54c8b4d8b02'
-            reuseMaps={true}
-            onCameraChanged={(ev: MapCameraChangedEvent) => console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)}
-          >
-            <PoiMarkers pois={locations} />
-          </Map>
-          <div className="journey-table-container">
-            <h1>Journey Table</h1>
-            <JourneyTable journeys={journeys} />
-          </div>
-          <div className="imd-data-table-container">
-            <h1>IMD Data</h1>
-            <ImdDataTable primaryLocation={primaryLocation} />
+            <div className="map-container">
+              <Map
+                mapDiv='map-container'
+                defaultBounds={{north: initBounds['north'], south: initBounds['south'], east: initBounds['east'], west: initBounds['west']}}
+                mapId='1fc6d54c8b4d8b02'
+                reuseMaps={true}
+                onCameraChanged={(ev: MapCameraChangedEvent) => console.log('camera changed:', ev.detail.center, 'zoom:', ev.detail.zoom)}
+                >
+                <PoiMarkers pois={locations} />
+              </Map>
+            </div>
+            <div className="journey-table-container">
+              <h1>Journey Table</h1>
+              <JourneyTable journeys={journeys} />
+            </div>
+            <div className="imd-data-table-container">
+              <h1>IMD Data</h1>
+              <ImdDataTable primaryLocation={primaryLocation} />
+            </div>
           </div>
         </APIProvider>
       );

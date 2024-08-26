@@ -1,0 +1,26 @@
+.footer-wrapper {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    background-color: #fff7e1;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.footer {
+    position: relative;
+    width: 100%;
+    background-color: #fff7e1; /* Matching the background color */
+    color: #333;
+    padding: 0;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

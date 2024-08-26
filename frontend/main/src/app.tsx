@@ -14,8 +14,10 @@ import {Circle} from './components/MapResult/circle.tsx';
 import axios from 'axios';
 
 import '../styles.css';
+import Header from './components/Header/Header.tsx';
 import InputForm from './components/InputForm/InputForm.tsx';
 import MapResult from './components/MapResult/MapResult.tsx';
+import Footer from './components/Footer/Footer.tsx';
 
 
 const App = () => {
@@ -34,14 +36,26 @@ const App = () => {
   };
 
   return (
-    <div class="middle-container" id='outline'>
-      <h1>HowFarFrom</h1>
-      {primaryLocation === null ? (
-        <InputForm onSubmit={handleFormSubmit} />
-      ) : (
-        <MapResult country={country} primaryLocation={primaryLocation} journeys={journeys} locations={locations} initBounds={initBounds} />
-      )}
+    <div class="middle-container">
+        <div class="header">
+            <Header title="HowFarFrom" />
+        </div>
+        <div class="inner-container">
+            {primaryLocation === null ? (
+                <InputForm onSubmit={handleFormSubmit} />
+            ) : (
+                <MapResult
+                    country={country}
+                    primaryLocation={primaryLocation}
+                    journeys={journeys}
+                    locations={locations}
+                    initBounds={initBounds}
+                />
+            )}
+        </div>
+        <div class="footer"><Footer></Footer></div>
     </div>
+
   )
 };
 
